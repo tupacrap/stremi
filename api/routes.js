@@ -1,7 +1,11 @@
-import { getRouter } = require('stremio-addon-sdk');
-import addonInterface from '../addon';
+const { getRouter } = require('stremio-addon-sdk');
+const addonInterface = require('../addon');
 
-export default function handler(req, res) {
-  const router = getRouter(addonInterface);
-  router(req, res);
-}
+const router = getRouter(addonInterface);
+
+module.exports = (req, res) => {
+    router(req, res, () => {
+        res.statusCode = 404;
+        res.end();
+    });
+};
