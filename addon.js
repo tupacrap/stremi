@@ -3,43 +3,24 @@ const fetch = require('isomorphic-fetch');
 
 const TMDB_API_KEY = '8838f8a5f692a9176ea733c099061246';
 
-const GENRES = [
-    { id: 28, name: "Acțiune" },
-    { id: 35, name: "Comedie" },
-    { id: 18, name: "Dramă" },
-    { id: 14, name: "Fantastic" },
-    { id: 27, name: "Horror" },
-    { id: 10749, name: "Romantic" },
-    { id: 53, name: "Thriller" },
-    { id: 99, name: "Documentar" }
-];
-
 const manifest = {
     id: 'org.romanianmedia',
     version: '1.0.0',
-    name: 'Filme/Seriale Românești',
+    name: 'Romanian Media',
     description: 'Filme și Seriale Românești',
     types: ['movie', 'series'],
     catalogs: [
         {
             type: 'movie',
             id: 'romanian-movies',
-            name: 'Filme Romanești',
-            genres: GENRES.map(g => g.name),
-            extra: [
-                { name: 'skip' },
-                { name: 'genre', isRequired: false }
-            ]
+            name: 'Romanești - Filme',
+            extra: [{ name: 'skip' }]
         },
         {
             type: 'series',
             id: 'romanian-series',
-            name: 'Seriale Românești',
-            genres: GENRES.map(g => g.name),
-            extra: [
-                { name: 'skip' },
-                { name: 'genre', isRequired: false }
-            ]
+            name: 'Romanești - Seriale',
+            extra: [{ name: 'skip' }]
         }
     ],
     resources: ['catalog'],
@@ -59,18 +40,11 @@ async function getImdbRating(imdbId) {
     }
 }
 
-async function getMovies(skip, genre) {
+async function getMovies(skip) {
     try {
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`;
-        
-        if (genre) {
-            const genreObj = GENRES.find(g => g.name === genre);
-            if (genreObj) {
-                url += `&with_genres=${genreObj.id}`;
-            }
-        }
-
-        const response = await fetch(url);
+        const response = await fetch(
+            `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`
+        );
         const data = await response.json();
         
         if (!data.results) {
@@ -105,18 +79,11 @@ async function getMovies(skip, genre) {
     }
 }
 
-async function getSeries(skip, genre) {
+async function getSeries(skip) {
     try {
-        let url = `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`;
-        
-        if (genre) {
-            const genreObj = GENRES.find(g => g.name === genre);
-            if (genreObj) {
-                url += `&with_genres=${genreObj.id}`;
-            }
-        }
-
-        const response = await fetch(url);
+        const response = await fetch(
+            `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`
+        );
         const data = await response.json();
 
         if (!data.results) {
@@ -153,15 +120,14 @@ async function getSeries(skip, genre) {
 
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
     const skip = extra.skip || 0;
-    const genre = extra.genre;
     
     if (type === 'movie' && id === 'romanian-movies') {
-        const metas = await getMovies(skip, genre);
+        const metas = await getMovies(skip);
         return { metas };
     }
     
     if (type === 'series' && id === 'romanian-series') {
-        const metas = await getSeries(skip, genre);
+        const metas = await getSeries(skip);
         return { metas };
     }
     
