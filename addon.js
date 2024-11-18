@@ -3,6 +3,13 @@ const fetch = require('isomorphic-fetch');
 
 const TMDB_API_KEY = '8838f8a5f692a9176ea733c099061246';
 
+const SORT_OPTIONS = [
+    { name: 'Popularitate', value: 'popularity.desc' },
+    { name: 'Rating', value: 'vote_average.desc' },
+    { name: 'Data lansării', value: 'release_date.desc' },
+    { name: 'Titlu', value: 'title.asc' }
+];
+
 const MOVIE_GENRES = [
     { id: 'action', name: 'Acțiune', tmdb_id: 28 },
     { id: 'comedy', name: 'Comedie', tmdb_id: 35 },
@@ -24,6 +31,11 @@ const manifest = {
             name: 'Romanești - Filme',
             extra: [
                 { name: 'skip' },
+                { 
+                    name: 'sort',
+                    options: SORT_OPTIONS,
+                    isRequired: false
+                },
                 { 
                     name: 'genre',
                     options: MOVIE_GENRES.map(genre => ({
@@ -58,9 +70,9 @@ async function getImdbRating(imdbId) {
     }
 }
 
-async function getMovies(skip, genre) {
+async function getMovies(skip, genre, sort = 'popularity.desc') {
     try {
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`;
+        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=${sort}&page=${Math.floor(skip/20) + 1}`;
         
         if (genre) {
             const genreObj = MOVIE_GENRES.find(g => g.id === genre);
@@ -146,9 +158,10 @@ async function getSeries(skip) {
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
     const skip = extra.skip || 0;
     const genre = extra.genre;
+    const sort = extra.sort || 'popularity.desc';
     
     if (type === 'movie' && id === 'romanian-movies') {
-        const metas = await getMovies(skip, genre);
+        const metas = await getMovies(skip, genre, sort);
         return { metas };
     }
     
