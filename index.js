@@ -1,3 +1,4 @@
-const { serveHTTP } = require('stremio-addon-sdk');
+const { serveHTTP, getRouter } = require('stremio-addon-sdk');
 const addonInterface = require('./addon');
-serveHTTP(addonInterface, { port: 7000 });
+
+module.exports = getRouter(addonInterface);
