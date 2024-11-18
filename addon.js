@@ -1,5 +1,5 @@
 const { addonBuilder } = require('stremio-addon-sdk');
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const TMDB_API_KEY = '8838f8a5f692a9176ea733c099061246';
 
