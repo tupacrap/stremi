@@ -94,11 +94,7 @@ async function getMovies(skip, genre) {
                 background: movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : null,
                 description: movie.overview || '',
                 releaseInfo: movie.release_date?.substring(0, 4),
-                imdbRating: imdbRating,
-                genres: movie.genre_ids.map(id => {
-                    const genre = GENRES.find(g => g.id === id);
-                    return genre ? genre.name : null;
-                }).filter(Boolean)
+                imdbRating: imdbRating
             };
         }));
 
@@ -144,11 +140,7 @@ async function getSeries(skip, genre) {
                 background: series.backdrop_path ? `https://image.tmdb.org/t/p/original${series.backdrop_path}` : null,
                 description: series.overview || '',
                 releaseInfo: series.first_air_date?.substring(0, 4),
-                imdbRating: imdbRating,
-                genres: series.genre_ids.map(id => {
-                    const genre = GENRES.find(g => g.id === id);
-                    return genre ? genre.name : null;
-                }).filter(Boolean)
+                imdbRating: imdbRating
             };
         }));
 
