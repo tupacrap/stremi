@@ -3,19 +3,15 @@ const fetch = require('isomorphic-fetch');
 
 const TMDB_API_KEY = '8838f8a5f692a9176ea733c099061246';
 
-const SORT_OPTIONS = [
-    { name: 'Popularitate', value: 'popularity.desc' },
-    { name: 'Rating', value: 'vote_average.desc' },
-    { name: 'Data lansării', value: 'release_date.desc' },
-    { name: 'Titlu', value: 'title.asc' }
-];
-
-const MOVIE_GENRES = [
-    { id: 'action', name: 'Acțiune', tmdb_id: 28 },
-    { id: 'comedy', name: 'Comedie', tmdb_id: 35 },
-    { id: 'drama', name: 'Dramă', tmdb_id: 18 },
-    { id: 'romance', name: 'Romantic', tmdb_id: 10749 },
-    { id: 'thriller', name: 'Thriller', tmdb_id: 53 }
+const GENRES = [
+    { id: 28, name: "Acțiune" },
+    { id: 35, name: "Comedie" },
+    { id: 18, name: "Dramă" },
+    { id: 14, name: "Fantastic" },
+    { id: 27, name: "Horror" },
+    { id: 10749, name: "Romantic" },
+    { id: 53, name: "Thriller" },
+    { id: 99, name: "Documentar" }
 ];
 
 const manifest = {
@@ -29,28 +25,21 @@ const manifest = {
             type: 'movie',
             id: 'romanian-movies',
             name: 'Romanești - Filme',
+            genres: GENRES.map(g => g.name),
             extra: [
                 { name: 'skip' },
-                { 
-                    name: 'sort',
-                    options: SORT_OPTIONS,
-                    isRequired: false
-                },
-                { 
-                    name: 'genre',
-                    options: MOVIE_GENRES.map(genre => ({
-                        name: genre.name,
-                        value: genre.id
-                    })),
-                    isRequired: false
-                }
+                { name: 'genre', isRequired: false }
             ]
         },
         {
             type: 'series',
             id: 'romanian-series',
             name: 'Romanești - Seriale',
-            extra: [{ name: 'skip' }]
+            genres: GENRES.map(g => g.name),
+            extra: [
+                { name: 'skip' },
+                { name: 'genre', isRequired: false }
+            ]
         }
     ],
     resources: ['catalog'],
@@ -70,14 +59,14 @@ async function getImdbRating(imdbId) {
     }
 }
 
-async function getMovies(skip, genre, sort = 'popularity.desc') {
+async function getMovies(skip, genre) {
     try {
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=${sort}&page=${Math.floor(skip/20) + 1}`;
+        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`;
         
         if (genre) {
-            const genreObj = MOVIE_GENRES.find(g => g.id === genre);
+            const genreObj = GENRES.find(g => g.name === genre);
             if (genreObj) {
-                url += `&with_genres=${genreObj.tmdb_id}`;
+                url += `&with_genres=${genreObj.id}`;
             }
         }
 
@@ -105,7 +94,11 @@ async function getMovies(skip, genre, sort = 'popularity.desc') {
                 background: movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : null,
                 description: movie.overview || '',
                 releaseInfo: movie.release_date?.substring(0, 4),
-                imdbRating: imdbRating
+                imdbRating: imdbRating,
+                genres: movie.genre_ids.map(id => {
+                    const genre = GENRES.find(g => g.id === id);
+                    return genre ? genre.name : null;
+                }).filter(Boolean)
             };
         }));
 
@@ -116,11 +109,18 @@ async function getMovies(skip, genre, sort = 'popularity.desc') {
     }
 }
 
-async function getSeries(skip) {
+async function getSeries(skip, genre) {
     try {
-        const response = await fetch(
-            `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`
-        );
+        let url = `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`;
+        
+        if (genre) {
+            const genreObj = GENRES.find(g => g.name === genre);
+            if (genreObj) {
+                url += `&with_genres=${genreObj.id}`;
+            }
+        }
+
+        const response = await fetch(url);
         const data = await response.json();
 
         if (!data.results) {
@@ -144,7 +144,11 @@ async function getSeries(skip) {
                 background: series.backdrop_path ? `https://image.tmdb.org/t/p/original${series.backdrop_path}` : null,
                 description: series.overview || '',
                 releaseInfo: series.first_air_date?.substring(0, 4),
-                imdbRating: imdbRating
+                imdbRating: imdbRating,
+                genres: series.genre_ids.map(id => {
+                    const genre = GENRES.find(g => g.id === id);
+                    return genre ? genre.name : null;
+                }).filter(Boolean)
             };
         }));
 
@@ -158,15 +162,14 @@ async function getSeries(skip) {
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
     const skip = extra.skip || 0;
     const genre = extra.genre;
-    const sort = extra.sort || 'popularity.desc';
     
     if (type === 'movie' && id === 'romanian-movies') {
-        const metas = await getMovies(skip, genre, sort);
+        const metas = await getMovies(skip, genre);
         return { metas };
     }
     
     if (type === 'series' && id === 'romanian-series') {
-        const metas = await getSeries(skip);
+        const metas = await getSeries(skip, genre);
         return { metas };
     }
     
