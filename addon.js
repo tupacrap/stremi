@@ -17,14 +17,14 @@ const GENRES = [
 const manifest = {
     id: 'org.romanianmedia',
     version: '1.0.0',
-    name: 'Romanian Media',
+    name: 'Filme/Seriale Românești',
     description: 'Filme și Seriale Românești',
     types: ['movie', 'series'],
     catalogs: [
         {
             type: 'movie',
             id: 'romanian-movies',
-            name: 'Romanești - Filme',
+            name: 'Filme Romanești',
             genres: GENRES.map(g => g.name),
             extra: [
                 { name: 'skip' },
@@ -34,7 +34,7 @@ const manifest = {
         {
             type: 'series',
             id: 'romanian-series',
-            name: 'Romanești - Seriale',
+            name: 'Seriale Românești',
             genres: GENRES.map(g => g.name),
             extra: [
                 { name: 'skip' },
