@@ -86,12 +86,20 @@ async function getMovies(skip, genre) {
             const imdbId = details.external_ids?.imdb_id;
             const imdbRating = imdbId ? await getImdbRating(imdbId) : null;
             
+            const posterUrl = movie.poster_path ? 
+                `https://image.tmdb.org/t/p/original${movie.poster_path}` : 
+                `https://image.tmdb.org/t/p/original/none.jpg`;
+            
+            const backgroundUrl = movie.backdrop_path ? 
+                `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : 
+                `https://image.tmdb.org/t/p/original/none.jpg`;
+            
             return {
                 id: imdbId || ('tmdb:' + movie.id),
                 type: 'movie',
                 name: movie.title || movie.original_title,
-                poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
-                background: movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : null,
+                poster: posterUrl,
+                background: backgroundUrl,
                 description: movie.overview || '',
                 releaseInfo: movie.release_date?.substring(0, 4),
                 imdbRating: imdbRating
@@ -132,12 +140,20 @@ async function getSeries(skip, genre) {
             const imdbId = details.external_ids?.imdb_id;
             const imdbRating = imdbId ? await getImdbRating(imdbId) : null;
 
+            const posterUrl = series.poster_path ? 
+                `https://image.tmdb.org/t/p/original${series.poster_path}` : 
+                `https://image.tmdb.org/t/p/original/none.jpg`;
+            
+            const backgroundUrl = series.backdrop_path ? 
+                `https://image.tmdb.org/t/p/original${series.backdrop_path}` : 
+                `https://image.tmdb.org/t/p/original/none.jpg`;
+
             return {
                 id: imdbId || ('tmdb:' + series.id),
                 type: 'series',
                 name: series.name || series.original_name,
-                poster: series.poster_path ? `https://image.tmdb.org/t/p/w500${series.poster_path}` : null,
-                background: series.backdrop_path ? `https://image.tmdb.org/t/p/original${series.backdrop_path}` : null,
+                poster: posterUrl,
+                background: backgroundUrl,
                 description: series.overview || '',
                 releaseInfo: series.first_air_date?.substring(0, 4),
                 imdbRating: imdbRating
@@ -150,7 +166,6 @@ async function getSeries(skip, genre) {
         return [];
     }
 }
-
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
     const skip = extra.skip || 0;
     const genre = extra.genre;
