@@ -4,7 +4,7 @@
   "description": "Romanian Movies and TV Shows from TMDB",
   "main": "api/index.js",
   "dependencies": {
-    "node-fetch": "^3.3.0",
+    "isomorphic-fetch": "^3.0.0",
     "stremio-addon-sdk": "1.6.10"
   },
   "engines": {
