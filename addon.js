@@ -3,6 +3,14 @@ const fetch = require('isomorphic-fetch');
 
 const TMDB_API_KEY = '8838f8a5f692a9176ea733c099061246';
 
+const MOVIE_GENRES = [
+    { id: 'action', name: 'Acțiune', tmdb_id: 28 },
+    { id: 'comedy', name: 'Comedie', tmdb_id: 35 },
+    { id: 'drama', name: 'Dramă', tmdb_id: 18 },
+    { id: 'romance', name: 'Romantic', tmdb_id: 10749 },
+    { id: 'thriller', name: 'Thriller', tmdb_id: 53 }
+];
+
 const manifest = {
     id: 'org.romanianmedia',
     version: '1.0.0',
@@ -14,7 +22,17 @@ const manifest = {
             type: 'movie',
             id: 'romanian-movies',
             name: 'Romanești - Filme',
-            extra: [{ name: 'skip' }]
+            extra: [
+                { name: 'skip' },
+                { 
+                    name: 'genre',
+                    options: MOVIE_GENRES.map(genre => ({
+                        name: genre.name,
+                        value: genre.id
+                    })),
+                    isRequired: false
+                }
+            ]
         },
         {
             type: 'series',
@@ -40,11 +58,18 @@ async function getImdbRating(imdbId) {
     }
 }
 
-async function getMovies(skip) {
+async function getMovies(skip, genre) {
     try {
-        const response = await fetch(
-            `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`
-        );
+        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=ro&language=ro-RO&sort_by=popularity.desc&page=${Math.floor(skip/20) + 1}`;
+        
+        if (genre) {
+            const genreObj = MOVIE_GENRES.find(g => g.id === genre);
+            if (genreObj) {
+                url += `&with_genres=${genreObj.tmdb_id}`;
+            }
+        }
+
+        const response = await fetch(url);
         const data = await response.json();
         
         if (!data.results) {
@@ -120,9 +145,10 @@ async function getSeries(skip) {
 
 builder.defineCatalogHandler(async ({ type, id, extra }) => {
     const skip = extra.skip || 0;
+    const genre = extra.genre;
     
     if (type === 'movie' && id === 'romanian-movies') {
-        const metas = await getMovies(skip);
+        const metas = await getMovies(skip, genre);
         return { metas };
     }
     
