@@ -6,20 +6,20 @@ const TMDB_API_KEY = '8838f8a5f692a9176ea733c099061246';
 const manifest = {
     id: 'org.romanianmedia',
     version: '1.0.0',
-    name: 'Filme și Seriale Românești',
+    name: 'Romanian Media',
     description: 'Filme și Seriale Românești',
     types: ['movie', 'series'],
     catalogs: [
         {
             type: 'movie',
             id: 'romanian-movies',
-            name: 'Filme Românești',
+            name: 'Romanești - Filme',
             extra: [{ name: 'skip' }]
         },
         {
             type: 'series',
             id: 'romanian-series',
-            name: 'Seriale/Emisiuni Românești',
+            name: 'Romanești - Seriale',
             extra: [{ name: 'skip' }]
         }
     ],
